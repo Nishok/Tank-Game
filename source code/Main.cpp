@@ -1,5 +1,6 @@
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_mixer.h"
 #include "SDL_ttf.h"
 #include <string>
 #include "Main.h"
@@ -15,6 +16,11 @@ SDL_Surface* dots = NULL;
 SDL_Surface* message = NULL;
 SDL_Surface* message1 = NULL;
 SDL_Surface* message2 = NULL;
+Mix_Music *music = NULL; //The playing music
+Mix_Chunk *scratch = NULL; //The sound effect
+Mix_Chunk *high = NULL;
+Mix_Chunk *med = NULL;
+Mix_Chunk *low = NULL;
 SDL_Event event; //Load the event structures
 SDL_Rect clip[4];
 TTF_Font* font = NULL;
@@ -80,6 +86,11 @@ bool init()
 		return false;
 	}
 
+	if(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+	{
+		return false;
+	}
+
 	SDL_WM_SetCaption("Nishok's test game", NULL); //Window title and icon
 
 	return true;
@@ -107,6 +118,17 @@ bool load_files()
 		return false;
 	}
 
+	music = Mix_LoadMUS("beat.wav");
+	scratch = Mix_LoadWAV("scratch.wav");
+	high = Mix_LoadWAV("high.wav");
+	med = Mix_LoadWAV("medium.wav");
+	low = Mix_LoadWAV("low.wav");
+
+	if((music == NULL) || (scratch == NULL) || (high == NULL) || (med == NULL) || (low == NULL))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -119,8 +141,14 @@ void cleanup()
 	SDL_FreeSurface(message1);
 	SDL_FreeSurface(message2);
 
+	Mix_FreeChunk(scratch);
+	Mix_FreeChunk(high);
+	Mix_FreeChunk(med);
+	Mix_FreeChunk(low);
+	Mix_FreeMusic(music);
+
 	TTF_CloseFont(font);
-	TTF_Quit;
+	TTF_Quit();
 
 	SDL_Quit(); //Quit the SDL
 }
@@ -157,6 +185,37 @@ int main( int argc, char* argv[] )
 				{
 					case SDLK_UP: message = message1; break;
 					case SDLK_DOWN: message = message2; break;
+					case SDLK_1: if(Mix_PlayChannel(-1, high, 0) == -1) //channel (-1 = first available channel), Mix_Chunk(), repeat (-1 = infinite)
+								 {
+									return 1;
+								 }
+					case SDLK_2: if(Mix_PlayChannel(-1, med, 0) == -1)
+								 {
+									return 1;
+								 };  break;
+					case SDLK_3: if(Mix_PlayChannel(-1, low, 0) == -1)
+								 {
+									return 1;
+								 }  break;
+					case SDLK_4: if(Mix_PlayingMusic() == 0)
+								 {
+									if(Mix_PlayMusic(music, -1) == -1) //music, repeat
+									{
+										return 1;
+									}
+								 } 
+								 else
+								 {
+									 if(Mix_PausedMusic() == 1)
+									 {
+										Mix_ResumeMusic();
+									 }
+									 else
+									 {
+										Mix_PauseMusic();
+									 }
+								 }  break;
+					case SDLK_0: Mix_HaltMusic();  break;
 				}
 			}
 			else if(event.type == SDL_QUIT)
