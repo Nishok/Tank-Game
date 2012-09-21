@@ -5,10 +5,12 @@
 #include <string>
 #include "Main.h"
 #include "Define.h"
+#include <string>
+#include <sstream> //Stringstream - make strings out of multiple variables
 
 using namespace std;
 
-//Initialize surfaces first
+//Initialization
 SDL_Surface* screen = NULL;
 SDL_Surface* background = NULL;
 SDL_Surface* image = NULL;
@@ -16,6 +18,7 @@ SDL_Surface* dots = NULL;
 SDL_Surface* message = NULL;
 SDL_Surface* message1 = NULL;
 SDL_Surface* message2 = NULL;
+SDL_Surface* seconds = NULL;
 Mix_Music *music = NULL; //The playing music
 Mix_Chunk *scratch = NULL; //The sound effect
 Mix_Chunk *high = NULL;
@@ -140,6 +143,7 @@ void cleanup()
 	SDL_FreeSurface(message);
 	SDL_FreeSurface(message1);
 	SDL_FreeSurface(message2);
+	SDL_FreeSurface(seconds);
 
 	Mix_FreeChunk(scratch);
 	Mix_FreeChunk(high);
@@ -156,6 +160,12 @@ void cleanup()
 int main( int argc, char* argv[] )
 {
 	bool quit = false;
+
+	bool running = true; //For the timer
+
+	Uint32 start = 0;
+
+	start = SDL_GetTicks();
 
 	if(init() == false)
 	{
@@ -216,54 +226,73 @@ int main( int argc, char* argv[] )
 									 }
 								 }  break;
 					case SDLK_0: Mix_HaltMusic();  break;
+					case SDLK_s: if(running == true)
+								 {
+									running = false;
+									start = 0;
+								 }
+								 else
+								 {
+									running = true;
+									start = SDL_GetTicks();
+								 }  break;
 				}
 			}
 			else if(event.type == SDL_QUIT)
 			{
 				quit = true;
 			}
+		}
 
-			apply_surface(0, 0, background, screen); //X, Y, source, destination
-			apply_surface(320, 0, background, screen);
-			apply_surface(0, 240, background, screen);
-			apply_surface(320, 240, background, screen);
-			apply_surface(180, 140, image, screen);
+		if(running == true)
+		{
+			stringstream time;
+			time << "Timer: " << SDL_GetTicks() - start;
 
-			if(message != NULL)
-			{
-				apply_surface(100, 0, message, screen);
-				message = NULL;
-			}
+			seconds = TTF_RenderText_Solid(font, time.str().c_str(), textColor);
+		}
 
-			clip[ 0 ].x = 0; 
-			clip[ 0 ].y = 0; 
-			clip[ 0 ].w = 100; 
-			clip[ 0 ].h = 100; 
+		apply_surface(0, 0, background, screen); //X, Y, source, destination
+		apply_surface(320, 0, background, screen);
+		apply_surface(0, 240, background, screen);
+		apply_surface(320, 240, background, screen);
+		apply_surface(180, 140, image, screen);
+		apply_surface((SCREEN_WIDTH - seconds->w) / 2, 25, seconds, screen);
 
-			clip[ 1 ].x = 100; 
-			clip[ 1 ].y = 0; 
-			clip[ 1 ].w = 100; 
-			clip[ 1 ].h = 100; 
+		if(message != NULL)
+		{
+			apply_surface(100, 0, message, screen);
+			message = NULL;
+		}
 
-			clip[ 2 ].x = 0; 
-			clip[ 2 ].y = 100; 
-			clip[ 2 ].w = 100; 
-			clip[ 2 ].h = 100; 
+		clip[ 0 ].x = 0; 
+		clip[ 0 ].y = 0; 
+		clip[ 0 ].w = 100; 
+		clip[ 0 ].h = 100; 
+		
+		clip[ 1 ].x = 100; 
+		clip[ 1 ].y = 0; 
+		clip[ 1 ].w = 100; 
+		clip[ 1 ].h = 100; 
 
-			clip[ 3 ].x = 100; 
-			clip[ 3 ].y = 100; 
-			clip[ 3 ].w = 100; 
-			clip[ 3 ].h = 100; 
+		clip[ 2 ].x = 0; 
+		clip[ 2 ].y = 100; 
+		clip[ 2 ].w = 100; 
+		clip[ 2 ].h = 100; 
 
-			apply_surface( 0, 0, dots, screen, &clip[ 0 ] ); //X, Y, source, destination, rectangle of which to copy
-			apply_surface( 540, 0, dots, screen, &clip[ 1 ] );
-			apply_surface( 0, 380, dots, screen, &clip[ 2 ] );
-			apply_surface( 540, 380, dots, screen, &clip[ 3 ] );
+		clip[ 3 ].x = 100; 
+		clip[ 3 ].y = 100; 
+		clip[ 3 ].w = 100; 
+		clip[ 3 ].h = 100; 
 
-			if(SDL_Flip(screen) == -1) //Refresh the screen
-			{
-				return 4;
-			}
+		apply_surface( 0, 0, dots, screen, &clip[ 0 ] ); //X, Y, source, destination, rectangle of which to copy
+		apply_surface( 540, 0, dots, screen, &clip[ 1 ] );
+		apply_surface( 0, 380, dots, screen, &clip[ 2 ] );
+		apply_surface( 540, 380, dots, screen, &clip[ 3 ] );
+
+		if(SDL_Flip(screen) == -1) //Refresh the screen
+		{
+			return 4;
 		}
 	}
 
