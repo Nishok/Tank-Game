@@ -1,4 +1,4 @@
-#include "Main.h"
+#include "main.h"
 
 using namespace std;
 
@@ -39,9 +39,14 @@ int CMain::OnExecute()
 		return 2;
 	}
 
-	SDL_Event event; //Load the event structures
+	CTimer myTimer;
+	myTimer.start();
+	//int frame = 0;
+	//bool cap = true;
+	//Timer fps;
 
-	start = SDL_GetTicks();
+
+	SDL_Event event; //Load the event structures
 
 	message1 = TTF_RenderText_Solid(font, "You mad? Yep, you are.", textColor); //font-file, text, color
 	message2 = TTF_RenderText_Solid(font, "You mad? Oh, you aren't? :(.", textColor);
@@ -92,16 +97,22 @@ int CMain::OnExecute()
 									 }
 								 }  break;
 					case SDLK_0: Mix_HaltMusic();  break;
-					case SDLK_s: if(running == true)
+					case SDLK_s: if(myTimer.is_started() == true)
 								 {
-									running = false;
-									start = 0;
+									 myTimer.stop();
 								 }
 								 else
 								 {
-									running = true;
-									start = SDL_GetTicks();
+									 myTimer.start();
 								 }  break;
+					case SDLK_p: if(myTimer.is_paused() == true)
+								 {
+									 myTimer.unpause();
+								 }
+								 else
+								 {
+									 myTimer.pause();
+								 } break;
 					case SDLK_F10: quit = true; break;
 				}
 			}
@@ -111,13 +122,10 @@ int CMain::OnExecute()
 			}
 		}
 
-		if(running == true)
-		{
-			stringstream time;
-			time << "Timer: " << SDL_GetTicks() - start;
+		stringstream time;
+		time << "Timer: " << myTimer.getTicks() / 1000.f;
 
-			seconds = TTF_RenderText_Solid(font, time.str().c_str(), textColor);
-		}
+		seconds = TTF_RenderText_Solid(font, time.str().c_str(), textColor);
 
 		CSurface::apply_surface(0, 0, background, screen); //X, Y, source, destination
 		CSurface::apply_surface(320, 0, background, screen);

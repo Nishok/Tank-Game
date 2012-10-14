@@ -5,4 +5,6 @@
 #define SCREEN_HEIGHT	480
 #define SCREEN_DEPTH	32
 
+#define FPS 20
+
 #endif

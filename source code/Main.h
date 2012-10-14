@@ -11,6 +11,7 @@
 
 #include "Define.h"
 #include "Surfaces.h"
+#include "Timer.h"
 
 class CMain {
 private:
